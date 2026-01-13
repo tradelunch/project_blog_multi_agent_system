@@ -2,3 +2,4 @@ __pycache__
 .env
 nfs_nas_sync
 __backup__
+tradelunch-agents-venv
