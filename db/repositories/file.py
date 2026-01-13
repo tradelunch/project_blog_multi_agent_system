@@ -184,13 +184,11 @@ class FileRepository(BaseRepository[File]):
         query = text("""
             INSERT INTO files (id, user_id, post_id, original_filename, stored_name, stored_uri, s3_key, content_type, ext, file_size, is_thumbnail)
             VALUES (:id, :user_id, :post_id, :original_filename, :stored_name, :stored_uri, :s3_key, :content_type, :ext, :file_size, :is_thumbnail)
-            ON CONFLICT (id) DO UPDATE SET
-                user_id = EXCLUDED.user_id,
+            ON CONFLICT (user_id, stored_name) DO UPDATE SET
                 post_id = EXCLUDED.post_id,
                 original_filename = EXCLUDED.original_filename,
-                stored_name = EXCLUDED.stored_name,
-                s3_key = EXCLUDED.s3_key,
                 stored_uri = EXCLUDED.stored_uri,
+                s3_key = EXCLUDED.s3_key,
                 content_type = EXCLUDED.content_type,
                 ext = EXCLUDED.ext,
                 file_size = EXCLUDED.file_size,
@@ -205,7 +203,8 @@ class FileRepository(BaseRepository[File]):
             "post_id": post_id,
             "original_filename": original_filename,
             "stored_name": stored_name,
-            "stored_uri": stored_uri,
+            # TODO client is using s3_key, so I set stored_uri to s3_key
+            "stored_uri": s3_key, 
             "s3_key": s3_key,
             "content_type": content_type,
             "ext": ext,

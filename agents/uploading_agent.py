@@ -492,14 +492,21 @@ class UploadingAgent(BaseAgent):
         import re
 
         updated_images = []
+        
+        # Combine thumbnail and images for processing
+        all_items = []
+        if thumbnail and isinstance(thumbnail, dict):
+            all_items.append(thumbnail)
+        all_items.extend(images)
 
-        for img in images:
+        for img in all_items:
             local_path = img.get("local_path", "")
             s3_url = img.get("s3_url", "")
             stored_name = img.get("stored_name", "")
 
             if not local_path or not s3_url:
-                updated_images.append(img)
+                if img not in (thumbnail if isinstance(thumbnail, dict) else []):
+                    updated_images.append(img)
                 continue
 
             # Use s3_url directly (already contains full CDN path with slug-based name)
@@ -512,13 +519,14 @@ class UploadingAgent(BaseAgent):
             replacement = f"![\\1]({cdn_url})"
             content = re.sub(pattern, replacement, content)
 
-            # Update image dict with CDN URL
-            updated_images.append(
-                {
-                    **img,
-                    "cdn_url": cdn_url,
-                }
-            )
+            # Update image dict with CDN URL (skip thumbnail from images list)
+            if img is not thumbnail:
+                updated_images.append(
+                    {
+                        **img,
+                        "cdn_url": cdn_url,
+                    }
+                )
 
         return content, updated_images
 
@@ -603,7 +611,7 @@ class UploadingAgent(BaseAgent):
                     post_id=int(post_id),
                     original_filename=original_filename,
                     stored_name=stored_name,
-                    stored_uri=stored_uri,
+                    stored_uri=stored_uri, # TODO hardcoded
                     s3_key=s3_key,
                     content_type=self._get_content_type(ext),
                     ext=ext,

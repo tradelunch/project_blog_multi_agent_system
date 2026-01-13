@@ -208,9 +208,8 @@ class PostRepository(BaseRepository[Post]):
         query = text("""
             INSERT INTO posts (id, group_id, level, parent_id, user_id, title, slug, content, description, category_id, status)
             VALUES (:id, :id, 0, NULL, :user_id, :title, :slug, :content, :description, :category_id, :status)
-            ON CONFLICT (id) DO UPDATE SET
+            ON CONFLICT (user_id, slug) DO UPDATE SET
                 title = EXCLUDED.title,
-                slug = EXCLUDED.slug,
                 content = EXCLUDED.content,
                 description = EXCLUDED.description,
                 category_id = EXCLUDED.category_id,

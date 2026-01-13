@@ -1,35 +1,102 @@
 {
   "commands": [
     {
-      "command": "upload when",
-      "timestamp": "05:11:51",
-      "success": false,
+      "command": "upload jdbc",
+      "timestamp": "21:45:09",
+      "success": true,
       "result": {
-        "success": false,
-        "error": "Upload failed: Could not determine join condition between parent/child tables on relationship User.categories - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.",
-        "agent": "ProjectManager"
-      }
-    },
-    {
-      "command": "upload when",
-      "timestamp": "05:25:58",
-      "success": false,
-      "result": {
-        "success": false,
-        "error": "Upload failed: [Errno 54] Connection reset by peer",
-        "agent": "ProjectManager"
-      }
-    },
-    {
-      "command": "upload when",
-      "timestamp": "05:38:20",
-      "success": false,
-      "result": {
-        "success": false,
-        "error": "Upload failed: [Errno 54] Connection reset by peer",
-        "agent": "ProjectManager"
-      }
-    }
-  ],
-  "last_session": "2026-01-12T05:46:53.614381"
-}
+        "success": true,
+        "data": {
+          "success": true,
+          "data": {
+            "article_id": 269300306511138816,
+            "title": "java spring jdbc",
+            "slug": "java-spring-jdbc",
+            "categories": [
+              "java",
+              "spring",
+              "jdbc"
+            ],
+            "category_ids": [
+              269300290027524096,
+              269300302618824704,
+              269300303596097536
+            ],
+            "category_id": 269300303596097536,
+            "published_url": "https://my.prettylog/blog/@taeklim/java-spring-jdbc",
+            "image_count": 1,
+            "images": [],
+            "upload_payload": {
+              "metadata": {
+                "title": "java spring jdbc",
+                "slug": "java-spring-jdbc",
+                "user_id": 2,
+                "username": "taeklim",
+                "level": 0,
+                "priority": 100,
+                "description": "This article explains Spring Boot JDBC libraries' roles and use cases. Readers learn to configure and use spring-session-jdbc, spring-boot-starter-data-jdbc, and spring-boot-starter-jdbc. Key takeaway: Choose the right JDBC library for session management, data access, and database integration.",
+                "status": "public",
+                "date": "2025-10-26 18:31:03",
+                "categories": [
+                  "java",
+                  "spring",
+                  "jdbc"
+                ],
+                "category_ids": [
+                  269300290027524096,
+                  269300302618824704,
+                  269300303596097536
+                ],
+                "category_id": 269300303596097536,
+                "tags": [
+                  "spring-boot",
+                  "spring-data-jdbc",
+                  "spring-session",
+                  "jdbc",
+                  "java",
+                  "spring-boot-starter"
+                ],
+                "word_count": 544,
+                "reading_time": 2
+              },
+              "content": "# Java Spring JDBC\n\n![java-spring-jdbc thumbnail](https://posts.prettylog.com/2/java/spring/jdbc/java-spring-jdbc/java-spring-jdbc.png)\n\nThis article explains the roles and use cases of spring-session-jdbc, spring-boot-starter-data-jdbc, and spring-boot-starter-jdbc in a Spring Boot project.\n\n---\n\n**1\ufe0f\u20e3 org.springframework.session:spring-session-jdbc**\n\n**\u2705 Features:**\n\n\u2022 A library that enables **storing Spring Sessions using JDBC**.\n\n\u2022 By default, it **stores session data in a database (DB)**, allowing **session persistence even after server restarts**.\n\n**\u2705 Use Cases:**\n\n\u2022 When sharing sessions across multiple servers in a **distributed environment**\n\n\u2022 When **database-based session storage** is needed instead of **Spring Boot's built-in session store** (default In-Memory)\n\n**\u2705 Example Configuration (application.yml)**\n\n```yaml\nspring:\n    session:\n        store-type: jdbc # Use JDBC-based session storage\n    datasource:\n        url: jdbc:mysql://localhost:3306/mydb\n        username: user\n        password: pass\n```\n\n\ud83d\udccc **Usage Example**\n\nUsed when **storing HTTP sessions in a DB** to share sessions across multiple instances in a session management service.\n\n```java\n@Controller\npublic class SessionController {\n    @GetMapping(\"/session\")\n    public String getSession(HttpSession session) {\n        session.setAttribute(\"username\", \"john_doe\");\n        return \"Session stored in DB!\";\n    }\n}\n```\n\n---\n\n**2\ufe0f\u20e3 org.springframework.boot:spring-boot-starter-data-jdbc**\n\n**\u2705 Features:**\n\n\u2022 Simplifies database access using **Spring Data JDBC**\n\n\u2022 Unlike Spring Data JPA, it is **optimized for simple CRUD operations based on JDBC**\n\n\u2022 **Useful for creating a lightweight data access layer compared to JPA**\n\n**\u2705 Use Cases:**\n\n\u2022 When using JDBC lightly without JPA (Hibernate)\n\n\u2022 When **Repository pattern-based data access** is needed without complex entity mapping\n\n**\u2705 Example (Repository Pattern)**\n\n```java\n@Repository\npublic interface UserRepository extends CrudRepository<User, Long> {\n    List<User> findByUsername(String username);\n}\n```\n\n\ud83d\udccc **Usage Example**\n\nUseful for **simple CRUD processing** using JDBC instead of JPA.\n\n```java\n@Service\npublic class UserService {\n    private final JdbcTemplate jdbcTemplate;\n\n    public UserService(JdbcTemplate jdbcTemplate) {\n        this.jdbcTemplate = jdbcTemplate;\n    }\n\n    public List<User> findAllUsers() {\n        return jdbcTemplate.query(\"SELECT * FROM users\", (rs, rowNum) ->\n                new User(rs.getLong(\"id\"), rs.getString(\"username\")));\n    }\n}\n```\n\n---\n\n**3\ufe0f\u20e3 org.springframework.boot:spring-boot-starter-jdbc**\n\n**\u2705 Features:**\n\n\u2022 Provides **basic configuration for JDBC-based database connection and SQL execution**\n\n\u2022 Includes DataSource, JdbcTemplate, etc., enabling **direct SQL execution**\n\n\u2022 Allows lower-level JDBC usage compared to spring-boot-starter-data-jdbc\n\n**\u2705 Use Cases:**\n\n\u2022 When **directly using JDBC** in Spring Boot\n\n\u2022 When executing SQL directly using JdbcTemplate\n\n\u2022 When SQL needs to be executed directly without ORM (JPA)\n\n**\u2705 Example (Using JdbcTemplate)**\n\n```java\n@Autowired\nprivate JdbcTemplate jdbcTemplate;\n\npublic void insertUser(String username) {\n    jdbcTemplate.update(\"INSERT INTO users (username) VALUES (?)\", username);\n}\n```\n\n\ud83d\udccc **Usage Example**\n\n\u2022 When **SQL needs to be executed directly without ORM**\n\n\u2022 When fast SQL execution is required (optimization needed for JOIN, GROUP BY, etc.)\n\n---\n\n**\ud83d\udccc Summary**\n\n| **Library**                   | **Role**                 | **When to Use?**                                    |\n| ----------------------------- | ------------------------ | --------------------------------------------------- |\n| spring-session-jdbc           | Store sessions in DB     | When session persistence and sharing across servers |\n| spring-boot-starter-data-jdbc | Spring Data JDBC support | When using simple Repository pattern without JPA    |\n| spring-boot-starter-jdbc      | Basic JDBC support       | When executing SQL directly (using JdbcTemplate)    |\n\n---\n\n**\ud83d\ude80 Which one should you use?**\n\n\u2022 **Basic JDBC usage in Spring Boot** \u2192 spring-boot-starter-jdbc\n\n\u2022 **Simple CRUD with Repository pattern** \u2192 spring-boot-starter-data-jdbc\n\n\u2022 **Session sharing & persistence across servers** \u2192 spring-session-jdbc\n\n---\n\n**\ud83d\udce2 Conclusion**\n\n\u2022 spring-boot-starter-jdbc is a library for **basic JDBC support**.\n\n\u2022 spring-boot-starter-data-jdbc makes it easy to **apply Spring Data JDBC-based Repository patterns**.\n\n\u2022 spring-session-jdbc is used for **storing and managing session data in a database**.\n\nChoose the appropriate library based on your project's requirements! \ud83d\ude0a\n\n## Test h2 header",
+              "thumbnail": {
+                "original_filename": "java-spring-jdbc.png",
+                "local_path": "/Users/tio/Documents/00_projects/tradelunch_blog_agents/posts/java/spring/jdbc/java-spring-jdbc/./java-spring-jdbc.png",
+                "stored_name": "java-spring-jdbc.png",
+                "s3_key": "2/java/spring/jdbc/java-spring-jdbc/java-spring-jdbc.png",
+                "s3_url": "https://posts.prettylog.com/2/java/spring/jdbc/java-spring-jdbc/java-spring-jdbc.png",
+                "content_type": "image/png",
+                "ext": "png",
+                "file_size": 131617,
+                "is_thumbnail": true
+              },
+              "images": [],
+              "category_hierarchy": [
+                {
+                  "id": 269300290027524096,
+                  "title": "java",
+                  "level": 0,
+                  "group_id": 269300290027524096,
+                  "user_id": 2
+                },
+                {
+                  "id": 269300302618824704,
+                  "title": "spring",
+                  "level": 1,
+                  "parent_id": 269300290027524096,
+                  "group_id": 269300290027524096,
+                  "user_id": 2
+                },
+                {
+                  "id": 269300303596097536,
+                  "title": "jdbc",
+                  "level": 2,
+                  "parent_id": 269300302618824704,
+                  "group_id": 269300290027524096,
+                  "user_id": 2
+                }
+              ],
+              "published_url": "https://my.prettylog/blog/@taeklim/java-spring-jdbc",
+              "source_file": "/Users/tio/Documents/00_projects/tradelunch_blog_agents/posts/java/spring/jdbc/java-spring-jdbc/java-spring-jdbc.md",
+              "processed_at": 

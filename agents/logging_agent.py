@@ -206,10 +206,10 @@ class LoggingAgent(BaseAgent):
                 )
             )
 
-            # Print full MCP payload
-            mcp_payload = data.get('mcp_payload')
-            if mcp_payload:
-                self._print_mcp_payload(mcp_payload)
+            # Print full upload payload
+            upload_payload = data.get('upload_payload')
+            if upload_payload:
+                self._print_upload_payload(upload_payload)
         else:
             error = result.get("error", "Unknown error")
             self.console.print(
@@ -221,15 +221,20 @@ class LoggingAgent(BaseAgent):
                 )
             )
 
-    def _print_mcp_payload(self, payload: dict):
-        """Print the full MCP payload as formatted JSON."""
+    def _print_upload_payload(self, payload: dict):
+        """Print the full upload payload as formatted JSON."""
         import json
         from rich.syntax import Syntax
 
-        # Truncate content for display
+        # Deep copy and truncate content for display
         display_payload = payload.copy()
-        if 'content' in display_payload and len(display_payload['content']) > 100:
-            display_payload['content'] = display_payload['content'][:100] + '...'
+        if 'content' in display_payload and len(str(display_payload.get('content', ''))) > 100:
+            display_payload['content'] = str(display_payload['content'])[:100] + '...'
+        
+        # Truncate nested content in metadata if present
+        if 'metadata' in display_payload and isinstance(display_payload['metadata'], dict):
+            meta = display_payload['metadata'].copy()
+            display_payload['metadata'] = meta
 
         # Format as JSON
         json_str = json.dumps(display_payload, indent=2, default=str, ensure_ascii=False)
@@ -241,7 +246,7 @@ class LoggingAgent(BaseAgent):
         self.console.print(
             Panel(
                 syntax,
-                title="📦 MCP Upload Payload",
+                title="📦 Upload Payload",
                 border_style="cyan",
                 padding=(1, 2),
             )
