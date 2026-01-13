@@ -183,6 +183,23 @@ class Post(Base, TimestampMixin, SoftDeleteMixin):
         Text,
         nullable=True,
     )
+    # SEO fields
+    meta_title: Mapped[Optional[str]] = mapped_column(
+        String(70),
+        nullable=True,
+    )
+    meta_description: Mapped[Optional[str]] = mapped_column(
+        String(170),
+        nullable=True,
+    )
+    og_image_url: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    og_image_alt: Mapped[Optional[str]] = mapped_column(
+        String(125),
+        nullable=True,
+    )
     status: Mapped[PostStatusEnum] = mapped_column(
         Enum(PostStatusEnum, name="post_status_enum", create_type=False),
         default=PostStatusEnum.PUBLIC,

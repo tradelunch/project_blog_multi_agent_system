@@ -10,18 +10,19 @@ A multi-agent system for automating blog post processing using LangGraph and Qwe
 │      (Qwen3 Orchestrator)               │
 └──────────────┬──────────────────────────┘
                │
-    ┌──────────┼──────────┬──────────┐
-    ▼          ▼          ▼          ▼
-┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
-│Document│ │Extract-│ │Upload- │ │Logging │
-│Scanner │ │  ing   │ │  ing   │ │ Agent  │
-│ Agent  │ │ Agent  │ │ Agent  │ │        │
-└────────┘ └────────┘ └────────┘ └────────┘
+    ┌──────────┼──────────┬──────────┬──────────┐
+    ▼          ▼          ▼          ▼          ▼
+┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+│Document│ │Extract-│ │Upload- │ │Image   │ │Logging │
+│Scanner │ │  ing   │ │  ing   │ │Proc.   │ │ Agent  │
+│ Agent  │ │ Agent  │ │ Agent  │ │ Agent  │ │        │
+└────────┘ └────────┘ └────────┘ └────────┘ └────────┘
 ```
 
 ## 🤖 Agents
 
 ### 1. Project Manager Agent
+
 - **Role**: Orchestrates the entire workflow
 - **Tech**: Qwen3 8B + LangGraph
 - Analyzes user commands
@@ -29,6 +30,7 @@ A multi-agent system for automating blog post processing using LangGraph and Qwe
 - Coordinates data flow between agents
 
 ### 2. Extracting Agent
+
 - **Role**: Markdown parsing and metadata extraction
 - **Tech**: Rule-based + Qwen3 for categorization
 - Parses frontmatter and content
@@ -36,13 +38,23 @@ A multi-agent system for automating blog post processing using LangGraph and Qwe
 - Generates categories and tags using LLM
 
 ### 3. Uploading Agent
+
 - **Role**: External system communication
 - **Tech**: MCP (Model Context Protocol)
 - Uploads images to S3
 - Saves articles to RDS
 - Returns URLs and IDs
 
-### 4. Logging Agent
+### 4. Image Processing Agent
+
+- **Role**: Image optimization for SEO/Social
+- **Tech**: Pillow (PIL)
+- Resizes thumbnails to 1200x630 (OG standard)
+- Applies transparent letterboxing (no distortion)
+- Maintains aspect ratio
+
+### 5. Logging Agent
+
 - **Role**: Unified logging and terminal output
 - **Tech**: Rich library
 - Formats agent-specific logs
@@ -54,6 +66,7 @@ A multi-agent system for automating blog post processing using LangGraph and Qwe
 ### Prerequisites
 
 1. **Ollama** with Qwen3 8B model
+
 ```bash
 # Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
@@ -97,6 +110,7 @@ python cli_multi_agent.py
 ### Available Commands
 
 #### File Processing
+
 ```bash
 # Upload a blog post
 blog-agent> upload ./posts/my-article.md
@@ -109,6 +123,7 @@ blog-agent> analyze ./posts/draft.md
 ```
 
 #### System Commands
+
 ```bash
 # Show system status
 blog-agent> status
@@ -127,7 +142,9 @@ blog-agent> exit
 ```
 
 #### Natural Language
+
 You can also use natural language:
+
 ```bash
 blog-agent> Please upload the file at ./posts/new-post.md
 blog-agent> Process tutorial.md with category detection
@@ -145,6 +162,7 @@ blog-agent/
 │   ├── document_scanner_agent.py  # Folder structure scanner
 │   ├── extracting_agent.py      # Markdown parsing
 │   ├── uploading_agent.py       # S3/RDS upload
+│   ├── image_processing_agent.py # Image resizing & SEO
 │   ├── logging_agent.py         # Logging & output
 │   └── project_manager.py       # Orchestrator
 ├── configs/                     # Configuration modules
@@ -211,11 +229,12 @@ DB_CONFIG = {
 ## 📝 Markdown File Format
 
 ### Basic Format
+
 ```markdown
 ---
 title: "Your Post Title"
 userId: 1
-status: 'public'  # 'public', 'private', or 'follower'
+status: "public" # 'public', 'private', or 'follower'
 author: "Your Name"
 date: "2026-01-03"
 ---
@@ -231,11 +250,11 @@ Content goes here...
 
 The `status` field controls who can see your post:
 
-| Status | Visibility | Use Case |
-|--------|------------|----------|
-| `'public'` | Everyone | Published articles (default) |
-| `'private'` | Only author | Drafts, personal notes |
-| `'follower'` | Followers only | Exclusive content |
+| Status       | Visibility     | Use Case                     |
+| ------------ | -------------- | ---------------------------- |
+| `'public'`   | Everyone       | Published articles (default) |
+| `'private'`  | Only author    | Drafts, personal notes       |
+| `'follower'` | Followers only | Exclusive content            |
 
 **Important:** Tags and description are **always generated by LLM** from content analysis (frontmatter values are ignored).
 
@@ -249,17 +268,25 @@ See [FRONTMATTER_GUIDE.md](FRONTMATTER_GUIDE.md) for complete documentation.
 - ✅ **Progress Tracking**: Real-time status updates
 - ✅ **Rich Terminal UI**: Beautiful formatted output
 - ✅ **Command History**: Track all operations
+- ✅ **SEO Optimization**:
+  - Auto-generated Open Graph tags
+  - Smart thumbnail resizing (1200x630)
+  - LLM-generated alt text for images
 
 ## 🔮 Future Enhancements
 
 ### Additional Agents
+
+### Additional Agents
+
 - **ValidationAgent**: Check markdown quality
 - **TranslationAgent**: Multi-language support
-- **SEOAgent**: Optimize for search engines
-- **ImageAgent**: AI image generation
+- **AnalyticsAgent**: Post performance tracking
 
 ### MCP Integration
+
 Once MCP server is implemented:
+
 - Real S3 uploads
 - Actual RDS operations
 - Cloud deployment
@@ -267,6 +294,7 @@ Once MCP server is implemented:
 ## 🐛 Troubleshooting
 
 ### Ollama Connection Error
+
 ```bash
 # Make sure Ollama is running
 ollama serve
@@ -276,12 +304,14 @@ ollama run qwen3:8b "Hello"
 ```
 
 ### Import Errors
+
 ```bash
 # Reinstall dependencies
 pip install -e . --force-reinstall
 ```
 
 ### File Not Found
+
 ```bash
 # Check file path
 ls -la ./posts/
@@ -360,6 +390,67 @@ blog-agent> status
 blog-agent> exit
 Goodbye! 👋
 ```
+
+### Upload Payload Structure
+
+After a successful upload, the system logs a detailed JSON payload:
+
+```json
+{
+	"metadata": {
+		"title": "java spring jdbc",
+		"slug": "java-spring-jdbc",
+		"user_id": 2,
+		"username": "taeklim",
+		"level": 0,
+		"priority": 100,
+		"description": "This article explains the roles and use cases...",
+		"status": "public",
+		"date": "2025-10-26 18:31:03",
+		"categories": ["java", "spring", "jdbc"],
+		"category_ids": [269300290027524096, 269300302618824704, 269300303596097536],
+		"category_id": 269300303596097536,
+		"tags": ["java", "spring", "jdbc", "spring-boot", "spring-session"],
+		"word_count": 544,
+		"reading_time": 2,
+		"meta_title": "java spring jdbc",
+		"meta_description": "This article explains the roles and use cases...",
+		"og_image_url": "https://posts.prettylog.com/2/java/spring/jdbc/...",
+		"og_image_alt": "java spring jdbc thumbnail"
+	},
+	"content": "# Java Spring JDBC\n\n![thumbnail](https://cdn.example.com/...)...",
+	"thumbnail": {
+		"original_filename": "java-spring-jdbc.png",
+		"stored_name": "java-spring-jdbc.png",
+		"s3_key": "2/java/spring/jdbc/java-spring-jdbc/java-spring-jdbc.png",
+		"s3_url": "https://posts.prettylog.com/2/java/spring/jdbc/...",
+		"content_type": "image/png",
+		"file_size": 135248,
+		"is_thumbnail": true
+	},
+	"images": [],
+	"category_hierarchy": [
+		{ "id": 269300290027524096, "title": "java", "level": 0 },
+		{ "id": 269300302618824704, "title": "spring", "level": 1, "parent_id": 269300290027524096 },
+		{ "id": 269300303596097536, "title": "jdbc", "level": 2, "parent_id": 269300302618824704 }
+	],
+	"published_url": "https://my.prettylog/blog/@taeklim/java-spring-jdbc",
+	"source_file": "/path/to/posts/java/spring/jdbc/java-spring-jdbc/java-spring-jdbc.md",
+	"processed_at": "2026-01-12 22:19:25"
+}
+```
+
+| Field                | Description                                               |
+| -------------------- | --------------------------------------------------------- |
+| `metadata`           | Article metadata including SEO fields                     |
+| `meta_title`         | SEO title for search results (max 70 chars)               |
+| `meta_description`   | SEO description (max 170 chars)                           |
+| `og_image_url`       | Open Graph image URL for social sharing                   |
+| `og_image_alt`       | Image alt text for accessibility                          |
+| `content`            | Markdown content with CDN image URLs replaced             |
+| `thumbnail`          | Resized thumbnail info (1200x630, OG-optimized)           |
+| `category_hierarchy` | Full category tree with Snowflake IDs                     |
+| `published_url`      | Final published URL                                       |
 
 ## 📄 License
 

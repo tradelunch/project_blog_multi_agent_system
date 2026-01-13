@@ -541,3 +541,46 @@ SUMMARY: First sentence here. Second sentence here. Third sentence here.
         except Exception as e:
             self._log(f"LLM metadata generation failed: {e}", "warning")
             return {"tags": [], "summary": "No summary available."}
+
+    async def _generate_og_alt(self, title: str, content: str = "") -> str:
+        """
+        Generate SEO-friendly alt text for OG image using LLM.
+
+        Args:
+            title: Article title
+            content: Article content (optional, for context)
+
+        Returns:
+            Alt text string (max 125 chars)
+        """
+        if not self.llm:
+            return f"{title} thumbnail"
+
+        prompt = f"""Generate a brief, descriptive alt text for a blog post thumbnail image.
+The alt text should be accessible and SEO-friendly.
+
+Article Title: {title}
+
+Requirements:
+- Maximum 100 characters
+- Describe what a reader would expect to see
+- Include relevant keywords naturally
+- Do not start with "Image of" or "Picture of"
+
+Alt text:"""
+
+        try:
+            response = self.llm.invoke(prompt)
+            alt_text = response.content.strip()
+            
+            # Clean and truncate
+            alt_text = alt_text.strip('"\'')
+            if len(alt_text) > 125:
+                alt_text = alt_text[:122] + "..."
+            
+            self._log(f"Generated OG alt text: {alt_text[:50]}...")
+            return alt_text
+            
+        except Exception as e:
+            self._log(f"OG alt generation failed: {e}", "warning")
+            return f"{title} thumbnail"

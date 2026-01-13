@@ -181,6 +181,11 @@ class PostRepository(BaseRepository[Post]):
         category_id: Optional[int] = None,
         status: PostStatusEnum = PostStatusEnum.PUBLIC,
         post_id: Optional[int] = None,
+        # SEO fields
+        meta_title: Optional[str] = None,
+        meta_description: Optional[str] = None,
+        og_image_url: Optional[str] = None,
+        og_image_alt: Optional[str] = None,
     ) -> int:
         """
         Upsert a post using raw SQL with ON CONFLICT.
@@ -196,6 +201,10 @@ class PostRepository(BaseRepository[Post]):
             category_id: Primary category ID.
             status: Post visibility status.
             post_id: Optional pre-generated ID.
+            meta_title: SEO title (max 70 chars).
+            meta_description: SEO description (max 170 chars).
+            og_image_url: OG image URL.
+            og_image_alt: OG image alt text.
         
         Returns:
             Upserted post ID.
@@ -206,14 +215,18 @@ class PostRepository(BaseRepository[Post]):
             post_id = generate_id()
         
         query = text("""
-            INSERT INTO posts (id, group_id, level, parent_id, user_id, title, slug, content, description, category_id, status)
-            VALUES (:id, :id, 0, NULL, :user_id, :title, :slug, :content, :description, :category_id, :status)
+            INSERT INTO posts (id, group_id, level, parent_id, user_id, title, slug, content, description, category_id, status, meta_title, meta_description, og_image_url, og_image_alt)
+            VALUES (:id, :id, 0, NULL, :user_id, :title, :slug, :content, :description, :category_id, :status, :meta_title, :meta_description, :og_image_url, :og_image_alt)
             ON CONFLICT (user_id, slug) DO UPDATE SET
                 title = EXCLUDED.title,
                 content = EXCLUDED.content,
                 description = EXCLUDED.description,
                 category_id = EXCLUDED.category_id,
                 status = EXCLUDED.status,
+                meta_title = EXCLUDED.meta_title,
+                meta_description = EXCLUDED.meta_description,
+                og_image_url = EXCLUDED.og_image_url,
+                og_image_alt = EXCLUDED.og_image_alt,
                 updated_at = CURRENT_TIMESTAMP
             RETURNING id
         """)
@@ -227,6 +240,10 @@ class PostRepository(BaseRepository[Post]):
             "description": description,
             "category_id": category_id,
             "status": status.value if hasattr(status, 'value') else status,
+            "meta_title": meta_title,
+            "meta_description": meta_description,
+            "og_image_url": og_image_url,
+            "og_image_alt": og_image_alt,
         })
         return result.scalar_one()
     

@@ -99,6 +99,12 @@ class PostSchema(BaseModel):
     # Status
     status: PostStatusEnum = Field(default=PostStatusEnum.PUBLIC, description="Visibility status")
 
+    # SEO fields
+    meta_title: Optional[str] = Field(default=None, max_length=70, description="SEO title for search results")
+    meta_description: Optional[str] = Field(default=None, max_length=170, description="SEO description for search results")
+    og_image_url: Optional[str] = Field(default=None, description="Open Graph image URL for social sharing")
+    og_image_alt: Optional[str] = Field(default=None, max_length=125, description="Open Graph image alt text")
+
     # Timestamps
     created_at: Optional[datetime] = Field(default=None, description="Creation timestamp")
     updated_at: Optional[datetime] = Field(default=None, description="Last update timestamp")
@@ -461,6 +467,13 @@ class ArticleMetadata(BaseModel):
     # Computed metadata
     word_count: Optional[int] = Field(default=None, description="Word count of content")
     reading_time: Optional[int] = Field(default=None, description="Estimated reading time in minutes")
+
+    # SEO fields
+    meta_title: Optional[str] = Field(default=None, max_length=70, description="SEO title for search results")
+    meta_description: Optional[str] = Field(default=None, max_length=170, description="SEO description for search results")
+    og_image_url: Optional[str] = Field(default=None, description="Open Graph image URL for social sharing")
+    og_image_alt: Optional[str] = Field(default=None, max_length=125, description="Open Graph image alt text")
+
 
 
 class UploadPayload(BaseModel):

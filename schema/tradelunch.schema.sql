@@ -60,6 +60,12 @@ CREATE TABLE posts (
     category_id     BIGINT NULL,
     user_id         BIGINT NOT NULL,
     description     TEXT DEFAULT NULL,
+    -- SEO fields
+    meta_title      VARCHAR(70) DEFAULT NULL,
+    meta_description VARCHAR(170) DEFAULT NULL,
+    og_image_url    TEXT DEFAULT NULL,
+    og_image_alt    VARCHAR(125) DEFAULT NULL,
+    -- --
     status          post_status_enum NOT NULL DEFAULT 'public',    
     -- --
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -68,6 +74,11 @@ CREATE TABLE posts (
     PRIMARY KEY (id)
 );
 
+--> just in case to update colums
+-- ALTER TABLE posts ADD COLUMN meta_title VARCHAR(70);
+-- ALTER TABLE posts ADD COLUMN meta_description VARCHAR(170);
+-- ALTER TABLE posts ADD COLUMN og_image_url TEXT;
+-- ALTER TABLE posts ADD COLUMN og_image_alt VARCHAR(125);
 
 
 

@@ -183,6 +183,12 @@ class UploadingAgent(BaseAgent):
             original_filename = Path(local_path).name
             ext = Path(local_path).suffix.lstrip(".")  # e.g., "png"
 
+            # Resize thumbnail to OG dimensions (1200x630) with transparent letterboxing
+            from agents.image_processing_agent import ImageProcessingAgent
+            img_processor = ImageProcessingAgent()
+            local_path = img_processor.resize_for_og(local_path)
+            self._log(f"Resized thumbnail for OG: {original_filename}")
+
             # Thumbnail uses slug-based name: [prefix]/[slug].ext
             stored_name = f"{slug}.{ext}"
             s3_key = f"{s3_prefix}/{stored_name}"
@@ -411,6 +417,14 @@ class UploadingAgent(BaseAgent):
 
             # 2. Create post using upsert
             post_repo = PostRepository(session)
+            
+            # Build SEO fields
+            thumbnail_data = data.get("thumbnail", {})
+            og_image_url = thumbnail_data.get("s3_url") if isinstance(thumbnail_data, dict) else None
+            meta_title = data.get("title", "")[:70]
+            meta_description = (data.get("summary") or data.get("description", ""))[:170] if data.get("summary") or data.get("description") else None
+            og_image_alt = f"{data.get('title', 'Article')} thumbnail"
+            
             article_id = await post_repo.upsert_post(
                 user_id=data.get("user_id", config.DEFAULT_USER_ID),
                 title=data.get("title"),
@@ -419,6 +433,11 @@ class UploadingAgent(BaseAgent):
                 description=data.get("summary") or data.get("description"),
                 category_id=deepest_category_id,
                 status=status_value,
+                # SEO fields
+                meta_title=meta_title,
+                meta_description=meta_description,
+                og_image_url=og_image_url,
+                og_image_alt=og_image_alt,
             )
 
             # 3. Link post to all categories in hierarchy
@@ -804,6 +823,11 @@ class UploadingAgent(BaseAgent):
             tags=data.get("tags", []),
             word_count=data.get("word_count"),
             reading_time=data.get("reading_time"),
+            # SEO fields
+            meta_title=data.get("meta_title") or data.get("title", "")[:70],
+            meta_description=data.get("meta_description") or (data.get("summary") or data.get("description", ""))[:170],
+            og_image_url=data.get("thumbnail", {}).get("s3_url") if isinstance(data.get("thumbnail"), dict) else None,
+            og_image_alt=data.get("og_image_alt") or f"{data.get('title', 'Article')} thumbnail",
         )
 
         # Build thumbnail file info
